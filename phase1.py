@@ -21,18 +21,34 @@ class Case:
     
     def set_neighboor(self, neighboor):
         self.neighboor = neighboor
+    
+    def set_showed(self, showed):
+        self.showed = showed
 
 class Demineur:
     '''
     Cette classe contient 3 attributs :
-        - finish    : booléen indiquant si la partie est finie
-        - level     : int indiquant le niveau du démineur (débutant, intermédiaire, expert)
-        - playground: tableau à 2 dimensions de cases où se passe le jeu
+        - finish    : booleen indiquant si la partie est finie
+        - level     : int indiquant le niveau du démineur (debutant, intermediaire, expert)
+        - playground: tableau a 2 dimensions de cases ou se passe le jeu
     '''
     def __init__(self, level):
         self.finish = False
         self.level = level
-        self.playground = create_playground(level) 
+        self.playground = create_playground(level)
+        play(self)
+    
+    def dig(self, coord):
+        x = coord[0]
+        y = coord[1]
+        sizex = len(self.playground[0])
+        sizey = len(self.playground)
+        if x>=0 and x<sizex and y>=0 and y<sizey:
+            self.playground[y][x].set_showed(True)
+            if self.playground[y][x].mined:
+                print("You lose!")
+                self.finish = True
+
         
 
 
@@ -40,9 +56,14 @@ class Demineur:
 
 
 def create_playground(level):
-# Liste qui contiendra les coordonnées des cases minées
+    # Liste qui contiendra les coordonnées des cases minées
     coord_mines = []
-    if level == 0:              # Niveau débutant       10x10       10 mines
+
+    if level == -1:             # Niveau test           5x5         2 mines
+        sizex = 5
+        sizey = 5
+        mines = 2
+    elif level == 0:            # Niveau débutant       10x10       10 mines
         sizex = 10
         sizey = 10
         mines = 10
@@ -57,9 +78,9 @@ def create_playground(level):
         sizey = 16
         mines = 99
 
-# Création d'un tableau de cases initialisées à 0 et False : playground[y][x] 
+    # Création d'un tableau de cases initialisées à 0 et False : playground[y][x] 
     playground = [[Case(False, 0) for i in range(sizex)] for j in range(sizey)]
-# Détermination des cases minées
+    # Détermination des cases minées
     for k in range(mines):
         x = random.randint(0,sizex-1)
         y = random.randint(0,sizey-1)
@@ -67,16 +88,11 @@ def create_playground(level):
             x = random.randint(0,sizex-1)   # On recrée un autre couple de coordonnées
             y = random.randint(0,sizey-1)
         coord_mines.append((x, y))  # On ajoute les coordonnées à la liste
-# Placement des cases minées
+    # Placement des cases minées
     for coord in coord_mines:       # Pour chaque couple de coordonnées
         x = coord[0]                # On insère une case minée dans le playground
         y = coord[1]                # aux coordonnées données
         playground[y][x] = Case(True, 0)
-        # for j in range(len(playground)):
-        #     line = str()
-        #     for i in range(len(playground[0])):
-        #         line = line + " " + str(playground[j][i].mined)
-        #     print(line)
 
     for j in range(len(playground)):
         for i in range(len(playground[0])):
@@ -91,21 +107,45 @@ def create_playground(level):
     
     return playground
 
+def play(demineur):
+    while not demineur.finish:
+        map = str()
+        for j in range(len(demineur.playground)):
+            line = str()
+            for i in range(len(demineur.playground[0])):
+                if not demineur.playground[j][i].showed:
+                    line = line + ". "
+                else:
+                    line = line + str(demineur.playground[j][i].neighboor) + " "
+            map = map + line + "\n"
+        print(map)
+        print()
+        ximp = input("Where to dig? x = ")
+        yimp = input("Where to dig? y = ")
+        while ximp == "":
+            ximp = input("Where to dig? x = ")
+        while yimp == "":
+            yimp = input("Where to dig? y = ")
+        x = int(ximp)
+        y = int(yimp)
+        demineur.dig((x,y))
+    print("Thanks for playing!")
 
 def main():
-    dd = Demineur(0)
+    Demineur(-1)
+    # dd = Demineur(0)
     # di = Demineur(1)
-    de = Demineur(2)
-    print()
-    print("Demineur debutant : ")
-    print("    finish : " + str(dd.finish))
-    print("    level : " + str(dd.level))
-    case = dd.playground[0][0]
-    print("    1ère case : mined : " + str(case.mined))
-    print("    1ère case : flagged : " + str(case.flagged))
-    print("    1ère case : showed : " + str(case.showed))
-    print("    1ère case : neighboor : " + str(case.neighboor))
-    print()
+    # de = Demineur(2)
+    # print()
+    # print("Demineur test : ")
+    # print("    finish : " + str(dt.finish))
+    # print("    level : " + str(dt.level))
+    # case = dt.playground[0][0]
+    # print("    1ère case : mined : " + str(case.mined))
+    # print("    1ère case : flagged : " + str(case.flagged))
+    # print("    1ère case : showed : " + str(case.showed))
+    # print("    1ère case : neighboor : " + str(case.neighboor))
+    # print()
     # print("Demineur intermediaire : ")
     # print("    finish : " + str(di.finish))
     # print("    level : " + str(di.level))
@@ -124,21 +164,21 @@ def main():
     # print("    1ère case : showed : " + str(case.showed))
     # print("    1ère case : neighboor : " + str(case.neighboor))
     # print()
-    print("Demineur expert : ")
-    for j in range(len(de.playground)):
-        line = str()
-        for i in range(len(de.playground[0])):
-            line = line + " " + str(de.playground[j][i].mined)
-        print(line)
-    print()
-    for j in range(len(de.playground)):
-        line = str()
-        for i in range(len(de.playground[0])):
-            if not de.playground[j][i].mined:
-                line = line + " " + str(de.playground[j][i].neighboor)
-            else:
-                line = line + " *"
-        print(line)
+    # print("Demineur test : ")
+    # for j in range(len(dt.playground)):
+    #     line = str()
+    #     for i in range(len(dt.playground[0])):
+    #         line = line + " " + str(dt.playground[j][i].mined)
+    #     print(line)
+    # print()
+    # for j in range(len(dt.playground)):
+    #     line = str()
+    #     for i in range(len(dt.playground[0])):
+    #         if not dt.playground[j][i].mined:
+    #             line = line + " " + str(dt.playground[j][i].neighboor)
+    #         else:
+    #             line = line + " *"
+    #     print(line)
 
 if __name__ == "__main__":
     main()
