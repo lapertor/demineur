@@ -36,7 +36,7 @@ class Demineur:
         self.finish = False
         self.level = level
         self.playground = create_playground(level)
-        play(self)
+        self.play()
     
     def dig(self, coord):
         x = coord[0]
@@ -48,6 +48,49 @@ class Demineur:
             if self.playground[y][x].mined:
                 print("You lose!")
                 self.finish = True
+
+    def play(self):
+        while not self.finish:
+            map = str()
+            for j in range(len(self.playground)):
+                line = str()
+                for i in range(len(self.playground[0])):
+                    if not self.playground[j][i].showed:
+                        line = line + ". "
+                    else:
+                        line = line + str(self.playground[j][i].neighboor) + " "
+                map = map + line + "\n"
+            print(map)
+            print()
+            ximp = input("Where to dig? x = ")
+            yimp = input("Where to dig? y = ")
+            while ximp == "":
+                ximp = input("Where to dig? x = ")
+            while yimp == "":
+                yimp = input("Where to dig? y = ")
+            x = int(ximp)
+            y = int(yimp)
+            self.dig((x,y))
+            win = True
+            for i in range(len(self.playground)):
+                for j in range(len(self.playground[0])):
+                    if not self.playground[j][i].mined and not self.playground[j][i].showed:
+                        win = False
+            if win:
+                print("You win!")
+            self.finish = win or self.finish
+        
+        map = str()
+        for j in range(len(self.playground)):
+            line = str()
+            for i in range(len(self.playground[0])):
+                if not self.playground[j][i].showed:
+                    line = line + "X "
+                else:
+                    line = line + str(self.playground[j][i].neighboor) + " "
+            map = map + line + "\n"
+        print(map)
+        print("Thanks for playing!")
 
         
 
@@ -107,29 +150,7 @@ def create_playground(level):
     
     return playground
 
-def play(demineur):
-    while not demineur.finish:
-        map = str()
-        for j in range(len(demineur.playground)):
-            line = str()
-            for i in range(len(demineur.playground[0])):
-                if not demineur.playground[j][i].showed:
-                    line = line + ". "
-                else:
-                    line = line + str(demineur.playground[j][i].neighboor) + " "
-            map = map + line + "\n"
-        print(map)
-        print()
-        ximp = input("Where to dig? x = ")
-        yimp = input("Where to dig? y = ")
-        while ximp == "":
-            ximp = input("Where to dig? x = ")
-        while yimp == "":
-            yimp = input("Where to dig? y = ")
-        x = int(ximp)
-        y = int(yimp)
-        demineur.dig((x,y))
-    print("Thanks for playing!")
+
 
 def main():
     Demineur(-1)
