@@ -31,11 +31,14 @@ class Demineur:
         - finish    : booleen indiquant si la partie est finie
         - level     : int indiquant le niveau du démineur (debutant, intermediaire, expert)
         - playground: tableau a 2 dimensions de cases ou se passe le jeu
+        - flagging  : booleen indiquant si on creuse ou on place un drapeau
+            ==> False pour creuser ; True pour mettre un drapeau
     '''
     def __init__(self, level):
         self.finish = False
         self.level = level
         self.playground = create_playground(level)
+        self.flagging = False
         self.play()
     
     def dig(self, coord):
@@ -43,7 +46,7 @@ class Demineur:
         y = coord[1]
         sizex = len(self.playground[0])
         sizey = len(self.playground)
-        if x>=0 and x<sizex and y>=0 and y<sizey:
+        if x>=0 and x<sizex and y>=0 and y<sizey and not self.playground[y][x].showed and not self.playground[y][x].flagged:
             self.playground[y][x].set_showed(True)
             if self.playground[y][x].mined:
                 print("You lose!")
@@ -54,6 +57,14 @@ class Demineur:
                         if i!=x or j!=y:
                             self.dig((i,j))
 
+    def flag(self, coord):
+        x = coord[0]
+        y = coord[1]
+        sizex = len(self.playground[0])
+        sizey = len(self.playground)
+        if x>=0 and x<sizex and y>=0 and y<sizey and not self.playground[y][x].showed:
+            self.playground[y][x].flagged = not self.playground[y][x].flagged
+    
     def play(self):
         while not self.finish:
             map = str()
@@ -61,29 +72,46 @@ class Demineur:
                 line = str()
                 for i in range(len(self.playground[0])):
                     if not self.playground[j][i].showed:
-                        line = line + ". "
+                        if self.playground[j][i].flagged:
+                            line = line + "! "
+                        else:
+                            line = line + ". "
                     else:
                         line = line + str(self.playground[j][i].neighboor) + " "
                 map = map + line + "\n"
             print(map)
             print()
-            ximp = input("Where to dig? x = ")
-            yimp = input("Where to dig? y = ")
+            if self.flagging:
+                print("Mode : Flagging")
+            else:
+                print("Mode : Digging")
+            
+            ximp = input("Where? x = ")
+            yimp = input("Where? y = ")
             while ximp == "":
-                ximp = input("Where to dig? x = ")
+                ximp = input("Where? x = ")
             while yimp == "":
-                yimp = input("Where to dig? y = ")
-            x = int(ximp)
-            y = int(yimp)
-            self.dig((x,y))
-            win = True
-            for i in range(len(self.playground)):
-                for j in range(len(self.playground[0])):
-                    if not self.playground[j][i].mined and not self.playground[j][i].showed:
-                        win = False
-            if win:
-                print("You win!")
-            self.finish = win or self.finish
+                yimp = input("Where? y = ")
+            if ximp == "d" or ximp == "D" or yimp == "d" or yimp == "D":
+                self.flagging = False
+            elif ximp == "f" or ximp == "F" or yimp == "f" or yimp == "F":
+                self.flagging = True
+            else:
+                x = int(ximp)
+                y = int(yimp)
+                if not self.flagging:
+                    self.dig((x,y))
+                    win = True
+                    for i in range(len(self.playground)):
+                        for j in range(len(self.playground[0])):
+                            if not self.playground[j][i].mined and not self.playground[j][i].showed:
+                                win = False
+                    if win:
+                        print("You win!")
+                    self.finish = win or self.finish
+                else:
+                    self.flag((x,y))
+
         
         map = str()
         for j in range(len(self.playground)):
